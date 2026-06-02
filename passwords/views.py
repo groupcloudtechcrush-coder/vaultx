@@ -240,3 +240,6 @@ def generate_password(request):
     password = ''.join(secrets.choice(pool) for _ in range(length))
 
     return JsonResponse({'password': password})
+def opay():
+    print("hello world")
+ 
