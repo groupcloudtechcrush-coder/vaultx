@@ -1,0 +1,24 @@
+name: ci/cd pipeline
+on :
+ push:
+    branches: [main]
+
+jobs:
+    test:
+        runs-on: ubuntu-lastest
+        steps:
+         - name: code checkout
+           uses: actions/checkout@v4
+         - name: python setup
+           uses: actions/setup-python@v5
+         - name: installing dependencies
+           run : |
+            pip install --upgrade pip
+            pip install -r requirements.txt
+         - name : code check
+           run : python manage.py check
+         - name : code test
+           run : python manage.py test
+
+        
+    
