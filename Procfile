@@ -1,1 +1,1 @@
-web: gunicorn vaulx.wsgi
+web: gunicorn vaultx.wsgi
