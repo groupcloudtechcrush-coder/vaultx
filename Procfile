@@ -1,0 +1,1 @@
+web: gunicorn vaulx.wsgi
