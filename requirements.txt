@@ -1,4 +1,4 @@
 Django>=4.2,<5.0
 cryptography>=41.0
 gunicorn==26.0.0
-django_promethues
+django_prometheus
