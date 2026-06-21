@@ -1,30 +1,32 @@
-name: Push to AWS ECR
+name: CI/CD Deploy to Amazon ECR
+
 on:
   push:
-    branches: [ "main" ] # Runs when you push code to main branch
+    branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4 # Pulls your code
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
 
-    - name: Login to AWS
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1 # Matches your screenshot region
-
-    - name: Login to ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2 # Logs into your registry
-
-    - name: Build and Push to Amazon
+    - name: Login, Build, and Push to ECR
+      env:
+        AWS_DEFAULT_REGION: us-east-1
+        AWS_REGION: us-east-1
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ACCOUNT_ID: "0570-2915-8877"
+        ECR_REPO_NAME: "monietrix/vaultx"
       run: |
-        docker build -t ://amazonaws.com .
-        docker push ://amazonaws.com
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com
+        
+        docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com/$ECR_REPO_NAME:latest .
+        
+        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com/$ECR_REPO_NAME:latest
+
 
 
         
