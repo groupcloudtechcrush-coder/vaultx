@@ -1,34 +1,45 @@
-name: CI/CD Deploy to Amazon ECR
+name: Deploy Web App to Amazon ECR
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] # Triggers the pipeline automatically on every push to main
 
 jobs:
-  deploy:
+  build-and-push:
+    name: Build Image and Push to AWS ECR
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Source Code
+    # Step 1: Download the application source code from Git
+    - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Login, Build, and Push to ECR
+    # Step 2: Log into AWS using the repository secrets
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # Step 3: Get token authorization to push directly to ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # Step 4: Build, tag, and publish the container image
+    - name: Build, Tag, and Push Docker Image
       env:
-        AWS_DEFAULT_REGION: us-east-1
-        AWS_REGION: us-east-1
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: vaultx-prod1 # Replace with your ECR repo name
+        IMAGE_TAG: ${{ github.sha }} # Uses the unique Git commit ID as the version tag
       run: |
-        # 1. Log in to AWS using the dynamic secrets format
-        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+        # Build the Docker image locally on the runner
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
         
-        # 2. Build your local Docker image using variables instead of hardcoded strings
-        docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com .
-        
-        # 3. Push the finalized image to AWS ECR
-        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com
+        # Push both the unique commit version and the 'latest' pointer to AWS
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
 
 
