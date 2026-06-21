@@ -1,24 +1,31 @@
-name: ci/cd pipeline
-on :
- push:
-    branches: [main]
+name: Push to AWS ECR
+on:
+  push:
+    branches: [ "main" ] # Runs when you push code to main branch
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-         - name: code checkout
-           uses: actions/checkout@v4
-         - name: python setup
-           uses: actions/setup-python@v5
-         - name: installing dependencies
-           run : |
-            pip install --upgrade pip
-            pip install -r requirements.txt
-         - name : code check
-           run : python manage.py check
-         - name : code test
-           run : python manage.py test
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4 # Pulls your code
+
+    - name: Login to AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1 # Matches your screenshot region
+
+    - name: Login to ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2 # Logs into your registry
+
+    - name: Build and Push to Amazon
+      run: |
+        docker build -t ://amazonaws.com .
+        docker push ://amazonaws.com
+
 
         
     
