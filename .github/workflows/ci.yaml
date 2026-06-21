@@ -21,11 +21,14 @@ jobs:
         AWS_ACCOUNT_ID:  ${{ secrets.AWS_ACCOUNT_ID }}
         ECR_REPO_NAME: ${{ secrets.ECR_REPO_NAME }}
       run: |
-        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com
+        # 1. Authentic AWS with no variable syntax bugs
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 057029158877.dkr.ecr.us-east-1.amazonaws.com
         
-        docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com/$ECR_REPO_NAME:latest .
+        # 2. Build the Docker image (⚠️ Change 'my-application' to your real ECR repo name)
+        docker build -t ://amazonaws.com .
         
-        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_://amazonaws.com/$ECR_REPO_NAME:latest
+        # 3. Push the image up to AWS
+        docker push ://amazonaws.com
 
 
 
